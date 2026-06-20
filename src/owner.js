@@ -666,6 +666,10 @@ async function loadProfileSettings() {
     document.getElementById('set-phone').value = d.phone || '';
     document.getElementById('set-email').value = d.email || '';
     document.getElementById('set-map').value = d.mapUrl || '';
+    document.getElementById('set-facebook').value = d.facebook || '';
+    document.getElementById('set-instagram').value = d.instagram || '';
+    document.getElementById('set-x').value = d.x || '';
+    document.getElementById('set-youtube').value = d.youtube || '';
   }
 }
 
@@ -681,7 +685,11 @@ document.getElementById('settings-form').addEventListener('submit', async (e) =>
       address: document.getElementById('set-address').value.trim(),
       phone: document.getElementById('set-phone').value.trim(),
       email: document.getElementById('set-email').value.trim(),
-      mapUrl: document.getElementById('set-map').value.trim()
+      mapUrl: document.getElementById('set-map').value.trim(),
+      facebook: document.getElementById('set-facebook').value.trim(),
+      instagram: document.getElementById('set-instagram').value.trim(),
+      x: document.getElementById('set-x').value.trim(),
+      youtube: document.getElementById('set-youtube').value.trim()
     });
     const adminName = document.getElementById('owner-admin-name');
     if (adminName) adminName.textContent = newName || 'Elite Admin';
