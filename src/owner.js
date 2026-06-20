@@ -397,6 +397,7 @@ function openFormModal(carId = null) {
     document.getElementById('car-boot').value = car.bootCapacity || '';
     
     document.getElementById('car-extras').value = car.extras ? car.extras.join(', ') : '';
+    document.getElementById('car-offers').value = car.specialOffers || '';
     
     if (car.colors) currentColors = [...car.colors];
     renderColors();
@@ -442,6 +443,7 @@ carForm.addEventListener('submit', async (e) => {
   const id = document.getElementById('car-id').value;
   const images = Array.from(document.querySelectorAll('.image-url')).map(i => i.value).filter(v => v);
   const ext = document.getElementById('car-extras').value;
+  const offers = document.getElementById('car-offers').value.trim();
   
   const data = {
     make: document.getElementById('car-make').value.trim(),
@@ -485,6 +487,7 @@ carForm.addEventListener('submit', async (e) => {
     
     colors: currentColors,
     extras: ext ? ext.split(',').map(s=>s.trim()) : [],
+    specialOffers: offers,
     images: images,
     updatedAt: new Date().toISOString()
   };

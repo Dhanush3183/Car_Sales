@@ -98,7 +98,7 @@ function renderCars(list) {
     const price = car.onRoadPrice || car.price || 0;
     const img = car.images?.[0] || 'https://placehold.co/600x400';
     const card = document.createElement('div');
-    card.className = 'glass-card rounded-3xl overflow-hidden cursor-pointer flex flex-col group relative bg-slate-900/40 backdrop-blur-md border border-slate-800/80 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(59,130,246,0.15)]';
+    card.className = 'glass-card rounded-3xl overflow-hidden cursor-pointer flex flex-col group relative bg-slate-900/40 backdrop-blur-md border border-slate-800/80 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(59₹30,246,0.15)]';
     card.onclick = (e) => {
       if(!e.target.closest('.compare-btn')) openFullCarView(car);
     };
@@ -213,6 +213,18 @@ function openFullCarView(car) {
   
   document.getElementById('fs-car-title').textContent = `${car.make} ${car.model}`;
   document.getElementById('fs-hero-title').textContent = `${car.make} ${car.model}`;
+  
+  const btnSpecialOffers = document.getElementById('btn-fs-special-offers');
+  if (btnSpecialOffers) {
+    if (car.specialOffers && car.specialOffers.trim() !== '') {
+      btnSpecialOffers.classList.remove('hidden');
+      btnSpecialOffers.classList.add('flex');
+      btnSpecialOffers.dataset.offers = car.specialOffers;
+    } else {
+      btnSpecialOffers.classList.add('hidden');
+      btnSpecialOffers.classList.remove('flex');
+    }
+  }
   
   let exShowroom = 0, rto = 0, ins = 0, tcs = 0, onRoadPrice = 0;
   let rtoPct = car.rtoPercent !== undefined ? car.rtoPercent : 10;
@@ -1599,6 +1611,175 @@ document.addEventListener('DOMContentLoaded', () => {
     const swipeThreshold = 50;
     if (touchEndX < touchStartX - swipeThreshold) igNext(); // swipe left
     if (touchEndX > touchStartX + swipeThreshold) igPrev(); // swipe right
+  }
+
+  // --- Special Offers Scratch Card Logic ---
+  const btnSpecialOffers = document.getElementById('btn-fs-special-offers');
+  const specialOffersModal = document.getElementById('special-offers-modal');
+  const specialOffersContent = document.getElementById('special-offers-content');
+  const closeSpecialOffersModal = document.getElementById('close-special-offers-modal');
+  const closeSpecialOffersBackdrop = document.getElementById('close-special-offers-backdrop');
+  const canvas = document.getElementById('scratch-canvas');
+  const offersList = document.getElementById('special-offers-list');
+
+  if (btnSpecialOffers && specialOffersModal) {
+    let ctx, isDrawing = false, lastX = 0, lastY = 0;
+
+    function initScratchCard() {
+      ctx = canvas.getContext('2d');
+      
+      // Resize canvas to match its CSS size
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      
+      // Fill with golden gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, '#D4AF37');
+      gradient.addColorStop(0.5, '#FFDF73');
+      gradient.addColorStop(1, '#AA771C');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add text on the canvas
+      ctx.font = '900 28px Outfit, sans-serif';
+      ctx.fillStyle = '#4A3305';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('SCRATCH TO REVEAL', canvas.width / 2, canvas.height / 2);
+      
+      // Setup for scratching
+      ctx.globalCompositeOperation = 'destination-out';
+    }
+
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      let x, y;
+      if (e.touches && e.touches.length > 0) {
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+      } else {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+      }
+      return { x, y };
+    }
+
+    function scratchStart(e) {
+      isDrawing = true;
+      const pos = getMousePos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+      scratch(e);
+    }
+
+    function scratchMove(e) {
+      if (!isDrawing) return;
+      if(e.cancelable) e.preventDefault();
+      scratch(e);
+    }
+
+    function scratchEnd() {
+      if(isDrawing) {
+        isDrawing = false;
+        checkScratchPercent();
+      }
+    }
+
+    function checkScratchPercent() {
+      if (!ctx) return;
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      let transparent = 0;
+      for (let i = 3; i < data.length; i += 16) {
+        if (data[i] < 128) transparent++;
+      }
+      const totalPixels = data.length / 16;
+      const percent = (transparent / totalPixels) * 100;
+
+      if (percent > 70) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.style.pointerEvents = 'none';
+        canvas.style.transition = 'opacity 0.6s ease';
+        canvas.style.opacity = '0';
+        
+        specialOffersContent.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        specialOffersContent.style.boxShadow = '0 0 100px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.2)';
+        specialOffersContent.style.transform = 'scale(1.03)';
+      }
+    }
+
+    function scratch(e) {
+      const pos = getMousePos(e);
+      ctx.beginPath();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 45;
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    btnSpecialOffers.addEventListener('click', () => {
+      // Reset animations
+      canvas.style.opacity = '1';
+      canvas.style.pointerEvents = 'auto';
+      specialOffersContent.style.boxShadow = '';
+      specialOffersContent.style.transform = '';
+
+      // Populate the list
+      const offers = btnSpecialOffers.dataset.offers || '';
+      // Support comma and newline separations
+      let offerItems = offers.split(/[,;\n]+/).map(s => s.trim()).filter(s => s);
+      
+      // Fallback if the user typed a single long sentence without commas
+      if(offerItems.length === 1 && offerItems[0].length > 40) {
+         // Attempt to separate by common keywords if no commas exist
+         const splitRegex = /(?=\s[A-Z][a-z]+|\s[0-9]+%)/g;
+         const splitItems = offerItems[0].split(splitRegex).map(s => s.trim()).filter(s => s);
+         if(splitItems.length > 1) {
+            offerItems = splitItems;
+         }
+      }
+
+      offersList.innerHTML = offerItems.map(item => `
+        <li class="flex items-start gap-4">
+          <svg class="w-6 h-6 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          <span class="text-lg font-bold text-white leading-snug">${item.replace(/\$/g, '₹')}</span>
+        </li>
+      `).join('');
+      
+      specialOffersModal.classList.remove('hidden');
+      void specialOffersModal.offsetWidth;
+      specialOffersModal.classList.add('opacity-100');
+      specialOffersContent.classList.remove('opacity-0', 'scale-95');
+      
+      // Wait for modal transition to render before sizing canvas
+      setTimeout(initScratchCard, 350);
+    });
+
+    function closeOffersModal() {
+      specialOffersModal.classList.remove('opacity-100');
+      specialOffersContent.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        specialOffersModal.classList.add('hidden');
+      }, 300);
+    }
+
+    closeSpecialOffersModal.addEventListener('click', closeOffersModal);
+    closeSpecialOffersBackdrop.addEventListener('click', closeOffersModal);
+
+    canvas.addEventListener('mousedown', scratchStart);
+    canvas.addEventListener('mousemove', scratchMove);
+    canvas.addEventListener('mouseup', scratchEnd);
+    canvas.addEventListener('mouseleave', scratchEnd);
+    
+    canvas.addEventListener('touchstart', scratchStart, { passive: false });
+    canvas.addEventListener('touchmove', scratchMove, { passive: false });
+    canvas.addEventListener('touchend', scratchEnd);
+    canvas.addEventListener('touchcancel', scratchEnd);
   }
 
 });
