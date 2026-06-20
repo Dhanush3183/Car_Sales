@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Owner CRM Dashboard | Premium Car Sales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased">
+    
+    <!-- Login Gate -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 text-slate-100">
+      <!-- Ambient Grid -->
+      <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+      <div class="absolute w-[500px] h-[500px] rounded-full bg-blue-500/10 filter blur-[100px] top-1/4 left-1/4 pointer-events-none animate-pulse"></div>
+      
+      <div class="glass-card login-card w-full max-w-md bg-slate-900/60 p-10 rounded-3xl shadow-2xl border border-slate-800 relative z-10 mx-4">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-blue-950/40 border border-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-md">
+            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          </div>
+          <h2 class="text-3xl font-extrabold tracking-tight text-white" style="font-family: 'Outfit', sans-serif;">Owner Console</h2>
+          <p class="text-sm text-slate-400 mt-2 font-medium">Sign in using credentials to manage inventory & bookings</p>
+        </div>
+        <form id="login-form" class="space-y-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Email Address</label>
+            <input type="email" id="email" required class="w-full px-5 py-4 glass-input rounded-xl focus:border-blue-500 text-white outline-none text-sm font-medium shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Password</label>
+            <input type="password" id="password" required class="w-full px-5 py-4 glass-input rounded-xl focus:border-blue-500 text-white outline-none text-sm font-medium shadow-sm">
+          </div>
+          <div id="login-error" class="text-red-400 text-sm hidden font-bold text-center bg-red-950/30 border border-red-900/30 py-3 rounded-xl">Invalid email or password combination.</div>
+          <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/30 uppercase text-sm tracking-wider hover:-translate-y-0.5">
+            Authorize & Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard Layout -->
+    <div id="dashboard-layout" class="hidden min-h-screen flex flex-col md:flex-row bg-slate-950 text-white">
+      
+      <!-- Sidebar -->
+      <aside class="fixed top-0 left-0 right-0 md:bottom-0 md:right-auto md:w-64 bg-slate-900 text-white flex flex-col shadow-xl z-40 md:h-screen border-b md:border-b-0 md:border-r border-slate-800">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center h-20 md:h-auto">
+          <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span id="owner-admin-name" class="font-bold text-lg tracking-tight font-display" style="font-family: 'Outfit', sans-serif;">Elite Admin</span>
+          </div>
+          <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white p-2 bg-slate-800/50 border border-slate-700/60 rounded-xl transition-all active:scale-95">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 hidden md:block absolute md:relative top-20 md:top-0 left-0 w-64 h-[calc(100vh-5rem)] md:h-auto bg-slate-900 border-r border-slate-800 md:border-r-0 z-50 md:translate-x-0 owner-sidebar-drawer overflow-y-auto" id="sidebar-nav">
+          <a href="#" class="nav-item active flex items-center px-4 py-3 rounded-xl bg-blue-600 text-white font-bold transition-all text-sm shadow-md shadow-blue-500/5" data-target="inventory-view">
+            <svg class="w-5 h-5 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            Showroom Fleet
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-xl text-slate-450 hover:bg-slate-800/50 hover:text-white font-bold transition-all text-sm" data-target="test-drives-view">
+            <svg class="w-5 h-5 mr-3 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Test Drive Leads
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-xl text-slate-450 hover:bg-slate-800/50 hover:text-white font-bold transition-all text-sm" data-target="trade-ins-view">
+            <svg class="w-5 h-5 mr-3 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            Trade-In Requests
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-xl text-slate-450 hover:bg-slate-800/50 hover:text-white font-bold transition-all text-sm" data-target="analytics-view">
+            <svg class="w-5 h-5 mr-3 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Analytics & Insights
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-xl text-slate-450 hover:bg-slate-800/50 hover:text-white font-bold transition-all text-sm" data-target="settings-view">
+            <svg class="w-5 h-5 mr-3 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            Global Profile
+          </a>
+          <button id="logout-btn" class="w-full flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-950/45 hover:text-red-300 font-bold transition-all mt-auto absolute bottom-6 left-4 right-4" style="width: calc(100% - 2rem);">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Log Out
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 md:ml-64 p-4 sm:p-8 bg-slate-950 min-h-screen relative z-0 pt-24 md:pt-8 text-white">
+        
+        <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight" style="font-family: 'Outfit', sans-serif;" id="view-title">Inventory Management</h1>
+            <p class="text-sm text-slate-400 font-medium mt-1 font-sans" id="view-subtitle">Manage your showroom vehicles and details.</p>
+          </div>
+          <div class="flex gap-4">
+            <div class="bg-slate-900 px-5 py-3.5 rounded-2xl shadow-md border border-slate-800/80 flex items-center gap-4 text-white">
+              <div class="p-2.5 bg-blue-950/40 border border-blue-900/40 rounded-xl text-blue-455">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Total Inventory</p>
+                <p class="text-2xl font-extrabold text-white" style="font-family: 'Outfit', sans-serif;" id="stat-total">0</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- View: Inventory -->
+        <section id="inventory-view" class="view-section">
+          <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 overflow-hidden">
+            <div class="p-6 border-b border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-950/40">
+              <div class="relative w-full sm:w-80">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
+                </div>
+                <input type="text" id="admin-search" class="block w-full p-2.5 pl-10 text-sm glass-input rounded-xl outline-none" placeholder="Search catalog by make/model...">
+              </div>
+              <button id="btn-add-car" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 hover:-translate-y-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                Add New Vehicle
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left text-slate-400">
+                <thead class="text-xs text-slate-300 uppercase bg-slate-950/60 border-b border-slate-800/60 font-bold">
+                  <tr>
+                    <th class="px-6 py-4.5">Vehicle Model</th>
+                    <th class="px-6 py-4.5">On-Road Price</th>
+                    <th class="px-6 py-4.5">Body Type</th>
+                    <th class="px-6 py-4.5">Status</th>
+                    <th class="px-6 py-4.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body" class="divide-y divide-slate-800/60">
+                  <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-slate-500 bg-slate-900 font-medium">Loading inventory records...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- View: Test Drives -->
+        <section id="test-drives-view" class="view-section hidden">
+          <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 overflow-hidden">
+            <div class="p-6 border-b border-slate-800/60 bg-slate-950/40 flex justify-between items-center">
+              <h3 class="text-lg font-bold text-white" style="font-family: 'Outfit', sans-serif;">Customer Test Drive Requests</h3>
+              <div class="flex gap-2">
+                <button id="btn-td-list" class="px-4 py-2 bg-blue-600 text-white border border-blue-500 rounded-lg text-xs font-bold transition-all shadow-lg shadow-blue-500/20">List View</button>
+                <button id="btn-td-cal" class="px-4 py-2 bg-slate-950/40 border border-slate-800 text-slate-400 rounded-lg text-xs font-bold transition-all hover:bg-slate-800/80">Calendar View</button>
+              </div>
+            </div>
+            <div id="td-list-container" class="overflow-x-auto min-h-[16rem] pb-24">
+              <table class="w-full text-sm text-left text-slate-400">
+                <thead class="text-xs text-slate-300 uppercase bg-slate-950/60 border-b border-slate-800/60 font-bold">
+                  <tr>
+                    <th class="px-6 py-4.5">Date Created</th>
+                    <th class="px-6 py-4.5">Customer details</th>
+                    <th class="px-6 py-4.5">Requested Vehicle</th>
+                    <th class="px-6 py-4.5">Preferred Date</th>
+                    <th class="px-6 py-4.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="test-drives-table-body" class="divide-y divide-slate-800/60">
+                </tbody>
+              </table>
+            </div>
+            <div id="td-cal-container" class="hidden p-6">
+              <div id="test-drives-calendar" class="text-slate-200"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View: Trade-In Requests -->
+        <section id="trade-ins-view" class="view-section hidden">
+          <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 overflow-hidden">
+            <div class="p-6 border-b border-slate-800/60 bg-slate-950/40 flex justify-between items-center">
+              <h3 class="text-lg font-bold text-white" style="font-family: 'Outfit', sans-serif;">Trade-In Evaluation Requests</h3>
+            </div>
+            <div class="overflow-x-auto min-h-[16rem] pb-24">
+              <table class="w-full text-sm text-left text-slate-400">
+                <thead class="text-xs text-slate-300 uppercase bg-slate-950/60 border-b border-slate-800/60 font-bold">
+                  <tr>
+                    <th class="px-6 py-4.5">Customer details</th>
+                    <th class="px-6 py-4.5">Car Details</th>
+                    <th class="px-6 py-4.5 min-w-[200px]">Valuation Estimate</th>
+                    <th class="px-6 py-4.5 text-right min-w-[150px]">Contact Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="trade-ins-table-body" class="divide-y divide-slate-800/60">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- View: Analytics -->
+        <section id="analytics-view" class="view-section hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 p-6 flex flex-col">
+              <h3 class="text-lg font-bold text-white mb-4" style="font-family: 'Outfit', sans-serif;">Trending Models (Inventory vs Leads)</h3>
+              <div class="relative flex-1 min-h-[300px]">
+                <canvas id="trendingChart" class="absolute inset-0 w-full h-full"></canvas>
+              </div>
+            </div>
+            <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 p-6 flex flex-col">
+              <h3 class="text-lg font-bold text-white mb-4" style="font-family: 'Outfit', sans-serif;">Test Drives Activity</h3>
+              <div class="relative flex-1 min-h-[300px]">
+                <canvas id="testDrivesChart" class="absolute inset-0 w-full h-full"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 p-6 flex flex-col max-w-3xl">
+            <h3 class="text-lg font-bold text-white mb-4" style="font-family: 'Outfit', sans-serif;">Most Viewed Cars</h3>
+            <div id="most-viewed-list" class="space-y-3">
+              <p class="text-slate-500 text-sm italic">Loading views...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- View: Settings -->
+        <section id="settings-view" class="view-section hidden">
+          <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800/80 max-w-3xl">
+            <form id="settings-form" class="p-6 space-y-6">
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-450 mb-1.5 uppercase tracking-wider">Showroom Name</label>
+                  <input type="text" id="set-name" required class="w-full p-3 glass-input rounded-xl outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-450 mb-1.5 uppercase tracking-wider">Address</label>
+                  <input type="text" id="set-address" required class="w-full p-3 glass-input rounded-xl outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-450 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                  <input type="text" id="set-phone" required class="w-full p-3 glass-input rounded-xl outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-450 mb-1.5 uppercase tracking-wider">Email Address</label>
+                  <input type="email" id="set-email" required class="w-full p-3 glass-input rounded-xl outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-450 mb-1.5 uppercase tracking-wider">Google Maps Embed Link</label>
+                  <input type="url" id="set-map" required class="w-full p-3 glass-input rounded-xl outline-none">
+                </div>
+              </div>
+              <div class="flex justify-end pt-5 border-t border-slate-800">
+                <button type="submit" id="save-settings-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all text-sm hover:-translate-y-0.5">Save Profile Changes</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- V3 Advanced Car Form Modal -->
+    <div id="car-form-modal" class="fixed inset-0 z-[60] hidden">
+      <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-md" id="form-backdrop"></div>
+      <div class="absolute inset-0 overflow-y-auto pt-10 pb-20">
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="w-full max-w-6xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 opacity-0 translate-y-4 text-white" id="form-content">
+            <div class="px-8 py-5 border-b border-slate-800/60 flex justify-between items-center bg-slate-950/40 sticky top-0 z-20">
+              <h3 class="text-xl font-bold text-white" style="font-family: 'Outfit', sans-serif;" id="form-modal-title">Add New Vehicle</h3>
+              <button id="close-form-modal" class="text-slate-400 hover:text-white outline-none bg-slate-800 p-2 rounded-full shadow-sm hover:shadow transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            
+            <form id="car-form" class="p-8">
+              <input type="hidden" id="car-id">
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+                
+                <!-- Section: Basic -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Basic Info
+                  </h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Make / Brand</label>
+                      <input type="text" id="car-make" required class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Model Name</label>
+                      <input type="text" id="car-model" required class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Year</label>
+                      <input type="number" id="car-year" required min="1900" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                      <select id="car-status" class="w-full p-2.5 glass-input rounded-lg text-sm font-medium">
+                        <option value="Available">Available</option>
+                        <option value="Sold">Sold</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Body Style</label>
+                      <select id="car-body" class="w-full p-2.5 glass-input rounded-lg text-sm font-medium">
+                        <option value="Sedan">Sedan</option>
+                        <option value="SUV">SUV</option>
+                        <option value="Coupe">Coupe</option>
+                        <option value="Hatchback">Hatchback</option>
+                        <option value="Truck">Truck</option>
+                        <option value="Convertible">Convertible</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+ 
+                <!-- Section: Cost -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Cost Setup (₹)
+                  </h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Base Price</label>
+                      <input type="number" id="car-base-price" required min="0" class="w-full p-2.5 glass-input rounded-lg text-sm" oninput="window.calcOnRoad()">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">RTO (%)</label>
+                      <input type="number" id="car-rto-percent" required min="0" max="100" class="w-full p-2.5 glass-input rounded-lg text-sm" oninput="window.calcOnRoad()" placeholder="e.g. 10">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Insurance (%)</label>
+                      <div class="relative">
+                        <input type="number" id="car-ins-percent" required min="0" max="100" class="w-full p-2.5 glass-input rounded-lg text-sm pr-20" oninput="window.calcOnRoad()" placeholder="e.g. 5">
+                        <div id="car-ins-amount" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-400 pointer-events-none">₹0</div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Handling & TCS (%)</label>
+                      <div class="relative">
+                        <input type="number" id="car-tcs-percent" required min="0" max="100" class="w-full p-2.5 glass-input rounded-lg text-sm pr-20" oninput="window.calcOnRoad()" placeholder="e.g. 1">
+                        <div id="car-tcs-amount" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-400 pointer-events-none">₹0</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4">
+                    <label class="block text-[10px] font-bold text-white uppercase tracking-wider mb-1">Final On-Road Price</label>
+                    <input type="text" id="car-on-road" required readonly class="w-full p-2.5 border-2 border-blue-600 rounded-lg bg-blue-950/40 text-blue-400 text-sm font-extrabold outline-none cursor-not-allowed">
+                  </div>
+                </div>
+ 
+                <!-- Section: Engine & Performance -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Engine & Performance
+                  </h4>
+                  <div class="mb-4">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Engine Name / Type</label>
+                    <input type="text" id="car-engine" placeholder="e.g. 3.0L Twin-Turbo V6" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Drive System</label>
+                      <select id="car-drive" class="w-full p-2.5 glass-input rounded-lg text-sm font-medium">
+                        <option value="FWD">FWD (Front-Wheel)</option>
+                        <option value="RWD">RWD (Rear-Wheel)</option>
+                        <option value="AWD">AWD (All-Wheel)</option>
+                        <option value="4WD">4WD (Four-Wheel)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Displacement (CC)</label>
+                      <input type="number" id="car-cc" placeholder="e.g., 2998" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Torque (Nm)</label>
+                      <input type="number" id="car-torque" placeholder="650" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Top Speed (km/h)</label>
+                      <input type="number" id="car-speed" placeholder="250" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                </div>
+ 
+                <!-- Section: Fuel Logic -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-emerald-405" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Fuel / Energy Logic
+                  </h4>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Fuel Type</label>
+                    <select id="car-fuel" required class="w-full p-2.5 glass-input rounded-lg text-sm font-medium" onchange="updateFuelFields()">
+                      <option value="Petrol">Petrol</option>
+                      <option value="Diesel">Diesel</option>
+                      <option value="CNG">CNG</option>
+                      <option value="Electric">Electric</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                  
+                  <div id="fuel-standard" class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" id="lbl-fuel-cap">Capacity (L)</label>
+                      <input type="number" id="car-fuel-cap" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" id="lbl-fuel-mileage">Mileage (km/L)</label>
+                      <input type="number" step="0.1" id="car-mileage" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  
+                  <div id="fuel-ev" class="grid grid-cols-2 gap-4 hidden">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Battery (kWh)</label>
+                      <input type="number" step="0.1" id="car-battery" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Charging (Hrs)</label>
+                      <input type="number" step="0.1" id="car-charge-time" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Max Driving Range (km)</label>
+                    <input type="number" id="car-range" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                  </div>
+                </div>
+ 
+                <!-- Section: Transmission & Safety -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    Transmission & Safety
+                  </h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gear System</label>
+                      <select id="car-gear-type" class="w-full p-2.5 glass-input rounded-lg text-sm font-medium">
+                        <option value="Automatic">Automatic</option>
+                        <option value="Manual">Manual</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">No. of Gears</label>
+                      <input type="number" id="car-gears" placeholder="e.g., 6" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ADAS Level</label>
+                    <select id="car-adas" class="w-full p-2.5 glass-input rounded-lg text-sm font-medium">
+                      <option value="0">Level 0 - No Automation</option>
+                      <option value="1">Level 1 - Driver Assistance</option>
+                      <option value="2">Level 2 - Partial Automation</option>
+                      <option value="3">Level 3 - Conditional Automation</option>
+                      <option value="4">Level 4 - High Automation</option>
+                      <option value="5">Level 5 - Full Automation</option>
+                    </select>
+                  </div>
+                  <div class="flex gap-6 pt-3">
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-400 cursor-pointer">
+                      <input type="checkbox" id="car-abs" class="w-4.5 h-4.5 text-blue-600 border-slate-800 rounded focus:ring-blue-500 bg-slate-950/40"> ABS Tech
+                    </label>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-400 cursor-pointer">
+                      <input type="checkbox" id="car-hill" class="w-4.5 h-4.5 text-blue-600 border-slate-800 rounded focus:ring-blue-500 bg-slate-950/40"> Hill Assist
+                    </label>
+                  </div>
+                </div>
+ 
+                <!-- Section: Dimensions & Capacity -->
+                <div class="space-y-4 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                    Dimensions & Capacity
+                  </h4>
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Length (cm)</label>
+                      <input type="number" id="car-dim-l" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Width (cm)</label>
+                      <input type="number" id="car-dim-w" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Height (cm)</label>
+                      <input type="number" id="car-dim-h" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Clearance (cm)</label>
+                      <input type="number" step="0.1" id="car-clearance" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Seater</label>
+                      <input type="number" id="car-seats" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Boot (L)</label>
+                      <input type="number" id="car-boot" class="w-full p-2.5 glass-input rounded-lg text-sm">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section: Colors -->
+                <div class="space-y-4 lg:col-span-2 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    Available Color Palette
+                  </h4>
+                  <p class="text-xs text-slate-400 font-medium">Added colors will render as perfect rounded swatches on the customer site.</p>
+                  
+                  <div class="flex flex-col sm:flex-row gap-3 items-center mt-2">
+                    <input type="color" id="color-picker" class="w-12 h-12 p-0.5 border border-slate-800 rounded-xl cursor-pointer bg-slate-950/40 shrink-0">
+                    <input type="text" id="color-hex" placeholder="#FFFFFF" class="w-full sm:w-32 p-3 glass-input rounded-xl text-sm uppercase font-mono">
+                    <input type="text" id="color-name" placeholder="E.g. Sapphire Blue Metallic" class="w-full flex-1 p-3 glass-input rounded-xl text-sm">
+                    <button type="button" id="btn-add-color" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">Add Color</button>
+                  </div>
+                  <div id="color-list" class="flex flex-wrap gap-3 p-4 bg-slate-950/40 border border-slate-800/80 rounded-2xl min-h-[70px]">
+                    <!-- Added colors loaded here -->
+                  </div>
+                </div>
+
+                <!-- Section: Extras -->
+                <div class="space-y-4 lg:col-span-1 bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                  <h4 class="font-bold text-white border-b border-slate-800/80 pb-2 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                    Extra Features
+                  </h4>
+                  <textarea id="car-extras" rows="4" placeholder="Enter comma-separated features (e.g. Panoramic Sunroof, 360 Degree Camera, Premium Audio System)" class="w-full p-3 glass-input rounded-xl text-sm resize-none font-medium"></textarea>
+                </div>
+
+              </div>
+
+              <!-- Visual Asset Manager -->
+              <div class="mb-8 bg-slate-900/60 p-6 rounded-3xl border border-slate-800/80">
+                <h4 class="font-bold text-white pb-2 mb-3 flex items-center gap-2 text-sm uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">
+                  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  Visual Assets (Hero Image Links)
+                </h4>
+                <div id="image-urls-container" class="space-y-4"></div>
+                <button type="button" id="add-image-url-btn" class="mt-4 text-xs bg-slate-950/40 border border-slate-800 hover:border-slate-700 px-5 py-3 rounded-xl text-slate-300 hover:text-white font-bold uppercase tracking-wider shadow-sm hover:shadow transition-all flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                  Add Image URL
+                </button>
+              </div>
+
+              <div class="flex justify-end gap-3 pt-5 border-t border-slate-800/80 sticky bottom-0 bg-slate-900/95 backdrop-blur-sm -mx-8 -mb-8 p-6 rounded-b-3xl">
+                <button type="button" id="cancel-form-btn" class="px-6 py-3 text-slate-300 bg-slate-950/40 border border-slate-800 hover:bg-slate-800/80 rounded-xl font-bold uppercase text-xs tracking-wider transition-all">Cancel</button>
+                <button type="submit" id="save-car-btn" class="px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-bold uppercase text-xs tracking-wider transition-all shadow-md">Save Vehicle</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Lead Connector Modal -->
+    <div id="email-modal" class="fixed inset-0 z-[70] hidden">
+      <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" id="email-backdrop"></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div id="email-content" class="bg-slate-900/95 backdrop-blur-xl w-full max-w-lg rounded-3xl shadow-2xl relative overflow-hidden transform transition-all opacity-0 translate-y-4 border border-slate-800">
+          <div class="bg-slate-950/80 p-5 flex justify-between items-center text-white border-b border-slate-800">
+            <h3 class="text-lg font-bold" style="font-family: 'Outfit', sans-serif;">Contact Test Drive Lead</h3>
+            <button type="button" id="close-email-modal" class="text-slate-400 hover:text-white transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="p-6">
+            <div class="mb-4">
+              <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">To</label>
+              <input type="email" id="email-to" readonly class="w-full p-3 glass-input rounded-xl outline-none opacity-60 cursor-not-allowed">
+            </div>
+            <div class="mb-4">
+              <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Subject</label>
+              <input type="text" id="email-subject" class="w-full p-3 glass-input rounded-xl outline-none">
+            </div>
+            <div class="mb-6">
+              <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Message</label>
+              <textarea id="email-body" rows="6" class="w-full p-3 glass-input rounded-xl outline-none resize-none"></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button type="button" id="cancel-email-btn" class="px-5 py-2.5 text-slate-300 bg-slate-950/40 border border-slate-800 rounded-xl font-bold uppercase text-xs tracking-wider hover:bg-slate-800/80">Cancel</button>
+              <button type="button" id="send-email-btn" class="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-bold uppercase text-xs tracking-wider shadow-md">Send Email via Mail App</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./src/owner.js"></script>
+    <script>
+      function calcOnRoad() {
+        const base = parseFloat(document.getElementById('car-base-price').value) || 0;
+        const tax = parseFloat(document.getElementById('car-tax').value) || 0;
+        document.getElementById('car-on-road').value = base + tax;
+      }
+      function updateFuelFields() {
+        const type = document.getElementById('car-fuel').value;
+        const std = document.getElementById('fuel-standard');
+        const ev = document.getElementById('fuel-ev');
+        const lCap = document.getElementById('lbl-fuel-cap');
+        const lMil = document.getElementById('lbl-fuel-mileage');
+        
+        if (type === 'Electric') {
+          std.classList.add('hidden');
+          ev.classList.remove('hidden');
+        } else {
+          ev.classList.add('hidden');
+          std.classList.remove('hidden');
+          if (type === 'CNG') {
+            lCap.textContent = 'Capacity (Kg)';
+            lMil.textContent = 'Mileage (km/kg)';
+          } else {
+            lCap.textContent = 'Capacity (L)';
+            lMil.textContent = 'Mileage (km/L)';
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
