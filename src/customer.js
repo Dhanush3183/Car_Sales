@@ -1494,4 +1494,88 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // --- Image Gallery Logic ---
+  let igCurrentIndex = 0;
+  const igModal = document.getElementById('image-gallery-modal');
+  const igImage = document.getElementById('ig-image');
+  const igCounter = document.getElementById('ig-counter');
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  function openImageGallery() {
+    if (typeof currentCarImages === 'undefined' || !currentCarImages || currentCarImages.length === 0) return;
+    igCurrentIndex = 0;
+    if(igModal) {
+      igModal.classList.remove('hidden');
+      void igModal.offsetWidth; // trigger reflow
+      igModal.classList.add('opacity-100');
+      updateIgImage();
+    }
+  }
+
+  function closeImageGallery() {
+    if(igModal) {
+      igModal.classList.remove('opacity-100');
+      setTimeout(() => igModal.classList.add('hidden'), 300);
+    }
+  }
+
+  function updateIgImage() {
+    if(igImage) {
+      igImage.classList.remove('scale-100', 'opacity-100');
+      igImage.classList.add('scale-95', 'opacity-0');
+      
+      setTimeout(() => {
+        igImage.src = currentCarImages[igCurrentIndex];
+        if(igCounter) igCounter.innerText = `${igCurrentIndex + 1} / ${currentCarImages.length}`;
+        igImage.onload = () => {
+          igImage.classList.remove('scale-95', 'opacity-0');
+          igImage.classList.add('scale-100', 'opacity-100');
+        };
+      }, 150);
+    }
+  }
+
+  function igNext() {
+    if (typeof currentCarImages === 'undefined' || !currentCarImages || currentCarImages.length <= 1) return;
+    igCurrentIndex = (igCurrentIndex + 1) % currentCarImages.length;
+    updateIgImage();
+  }
+
+  function igPrev() {
+    if (typeof currentCarImages === 'undefined' || !currentCarImages || currentCarImages.length <= 1) return;
+    igCurrentIndex = (igCurrentIndex - 1 + currentCarImages.length) % currentCarImages.length;
+    updateIgImage();
+  }
+
+  const btnSeeImages = document.getElementById('btn-see-images');
+  if (btnSeeImages) btnSeeImages.addEventListener('click', openImageGallery);
+  
+  const closeIgModal = document.getElementById('close-ig-modal');
+  if (closeIgModal) closeIgModal.addEventListener('click', closeImageGallery);
+  
+  const igNextBtn = document.getElementById('ig-next');
+  if (igNextBtn) igNextBtn.addEventListener('click', igNext);
+  
+  const igPrevBtn = document.getElementById('ig-prev');
+  if (igPrevBtn) igPrevBtn.addEventListener('click', igPrev);
+
+  const igContainer = document.getElementById('ig-container');
+  if (igContainer) {
+    igContainer.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    igContainer.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleIgSwipe();
+    });
+  }
+
+  function handleIgSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) igNext(); // swipe left
+    if (touchEndX > touchStartX + swipeThreshold) igPrev(); // swipe right
+  }
+
 });
