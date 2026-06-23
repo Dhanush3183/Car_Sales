@@ -28,6 +28,18 @@ let inventory = [];
 let testDrivesData = [];
 const formatINR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 
+function convertGoogleDriveUrl(url) {
+    let match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w2000`;
+    }
+    match = url.match(/[?&]id=([^&]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w2000`;
+    }
+    return url;
+}
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loginScreen.classList.add('hidden');
@@ -273,9 +285,13 @@ function renderInventoryTable(items) {
   items.forEach(car => {
     const row = document.createElement('tr');
     row.className = 'hover:bg-slate-900/60 border-b border-slate-800/60 transition-colors';
+    
+    // Convert Google Drive links if they exist
+    const imgUrl = car.images && car.images.length > 0 ? convertGoogleDriveUrl(car.images[0]) : 'https://placehold.co/100';
+
     row.innerHTML = `
       <td class="px-6 py-4.5 flex items-center gap-3">
-        <img src="${car.images?.[0] || 'https://placehold.co/100'}" class="w-11 h-11 rounded-xl object-cover border border-slate-800 shadow-sm shrink-0">
+        <img src="${imgUrl}" class="w-11 h-11 rounded-xl object-cover border border-slate-800 shadow-sm shrink-0">
         <div>
           <div class="font-bold text-slate-100 text-sm">${car.make} ${car.model}</div>
           <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${car.year} • ${car.body}</div>

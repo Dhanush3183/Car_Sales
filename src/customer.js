@@ -1,6 +1,18 @@
 import { app, db } from './firebase-config.js';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, increment } from 'firebase/firestore';
 
+function convertGoogleDriveUrl(url) {
+    let match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w2000`;
+    }
+    match = url.match(/[?&]id=([^&]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w2000`;
+    }
+    return url;
+}
+
 gsap.registerPlugin(ScrollTrigger);
 
 let cars = [];
@@ -64,7 +76,13 @@ async function fetchSettings() {
 
 async function fetchCars() {
   const snap = await getDocs(collection(db, 'cars'));
-  cars = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(c => c.status === 'Available');
+  cars = snap.docs.map(doc => {
+    let data = doc.data();
+    if (data.images && Array.isArray(data.images)) {
+      data.images = data.images.map(convertGoogleDriveUrl);
+    }
+    return { id: doc.id, ...data };
+  }).filter(c => c.status === 'Available');
   
   const brands = [...new Set(cars.map(c => c.make))].sort();
   brands.forEach(b => {
